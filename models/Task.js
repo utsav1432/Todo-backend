@@ -9,11 +9,6 @@ const taskSchema = new Schema({
         trim: true,
         minlength: [3, 'Title must be at least 3 characters']
     },
-    description: {
-        type: String,
-        trim: true,
-        default: ''
-    },
     completed: {
         type: Boolean,
         default: false
