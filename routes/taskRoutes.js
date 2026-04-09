@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.get('/', getAllTask);
 
+router.get("/search", searchTasks);
+
 router.get('/:id', getSingleTaskById);
 
 router.post('/', createTask);
@@ -15,7 +17,5 @@ router.put('/:id', updateTask);
 router.delete('/:id', deleteTask);
 
 router.put('/:id/toggle', toggleTaskComplete);
-
-router.get("/search", searchTasks);
 
 module.exports = router;
