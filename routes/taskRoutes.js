@@ -16,6 +16,6 @@ router.delete('/:id', deleteTask);
 
 router.put('/:id/toggle', toggleTaskComplete);
 
-router.get("/tasks/search", searchTasks);
+router.get("/search", searchTasks);
 
 module.exports = router;
