@@ -52,17 +52,22 @@ exports.getSingleTaskById = async (req, res) => {
 }
 
 exports.createTask = async (req, res) => {
-    const { data } = req.body;
-
-    if (data.trim()  === '') {
-        return res.status(400).json({
-            success: false,
-            message: "Data is required"
-        });
-    }
-
     try {
-        const task = await Task.create(data);
+        const { data } = req.body;
+
+        const { title } = data;
+
+        if (!title || title.trim()  === '') {
+            return res.status(400).json({
+                success: false,
+                message: "Title is required"
+            });
+        }
+
+        const task = await Task.create({ 
+            title, 
+            completed: false
+        });
         
         res.status(201).json({
             success: true,
@@ -80,17 +85,17 @@ exports.createTask = async (req, res) => {
 };
 
 exports.updateTask = async (req, res) => {
-    const {id} = req.params;
-    const {data} = req.body;
-
-    if (data.trim() === ''){
-        return res.status(400).json({
-            success: false,
-            message: `Please provide the data to update the Task`
-        })
-    }
-
     try {
+        const {id} = req.params;
+        const {data} = req.body;
+    
+        if (!data || (Object.keys(data).length === 0)) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide data to update (title or completed)"
+            });
+        }
+
         const task = await Task.findById(id)
 
         if(!task){
@@ -100,7 +105,8 @@ exports.updateTask = async (req, res) => {
             })
         }
     
-        const updateTask = await Task.findByIdAndUpdate(id, data, {
+        const updateTask = await Task.findByIdAndUpdate(id, data, 
+        {
             new:true, 
             runValidators:true 
         });
