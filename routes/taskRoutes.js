@@ -4,9 +4,9 @@ const { getAllTask, getSingleTaskById, createTask, updateTask, deleteTask, toggl
 
 const router = express.Router();
 
-router.get('/', getAllTask);
+router.get('/search', searchTasks);
 
-router.get("/search", searchTasks);
+router.get('/', getAllTask);
 
 router.get('/:id', getSingleTaskById);
 

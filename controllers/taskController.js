@@ -4,7 +4,7 @@ exports.getAllTask = async (req, res) => {
     try {
         const tasks = await Task.find();
 
-        if (!tasks || tasks.length === 0){
+        if (tasks.length === 0){
             return res.status(404).json({
                 success: false,
                 message: "No Task Found"
@@ -16,25 +16,25 @@ exports.getAllTask = async (req, res) => {
             data: tasks
         })
     } catch (error) {
-        console.log("Error in getAllTask Api:", error);
+        console.log("Couldn't get all tasks", error);
 
         res.status(500).json({
             success: false,
-            message: "Server error in fetching tasks"
+            message: "Server error"
         });
     }
 }
 
 exports.getSingleTaskById = async (req, res) => {
-    try {
-        const {id} = req.params;
+    const {id} = req.params;
 
+    try {
         const task = await Task.findById(id)
     
         if (!task){
             return res.status(404).json({
                 success: false,
-                message: `No Task Found on id ${id}`
+                message: `No Task Found`
             })
         }
         res.status(200).json({
@@ -42,26 +42,26 @@ exports.getSingleTaskById = async (req, res) => {
             data: task
         })
     } catch (error) {
-        console.log("Error in getSingleTaskById Api:", error);
+        console.log("Couldn't get task by Id", error);
 
         res.status(500).json({
             success: false,
-            message: "Server error in fetching single task by id."
+            message: "Server error"
         });
     }
 }
 
 exports.createTask = async (req, res) => {
-    try {
-        const { data } = req.body;
+    const { data } = req.body;
 
-        if (!data || Object.keys(data).length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: "Please provide the data to create a new task"
-            });
-        }
-    
+    if (data.trim()  === '') {
+        return res.status(400).json({
+            success: false,
+            message: "Data is required"
+        });
+    }
+
+    try {
         const task = await Task.create(data);
         
         res.status(201).json({
@@ -70,36 +70,40 @@ exports.createTask = async (req, res) => {
             data: task 
         });
     } catch (error) {
-        console.log("Error in createTask Api:", error);
+        console.log("Couldn't create task", error);
 
         res.status(500).json({
             success: false,
-            message: "Server error in creating task."
+            message: "Failde to create task."
         });
     }
 };
 
 exports.updateTask = async (req, res) => {
+    const {id} = req.params;
+    const {data} = req.body;
+
+    if (data.trim() === ''){
+        return res.status(400).json({
+            success: false,
+            message: `Please provide the data to update the Task`
+        })
+    }
+
     try {
-        const {id} = req.params;
-        const {data} = req.body;
-    
-        if (!data || Object.keys(data).length === 0){
-            return res.status(400).json({
-                success: false,
-                message: `Please provide the data to update the Task`
-            })
-        }
-    
         const task = await Task.findById(id)
+
         if(!task){
             return res.status(404).json({
                 success: false,
-                message: `Task Not foung for id ${id}`
+                message: `Task Not foung`
             })
         }
     
-        const updateTask = await Task.findByIdAndUpdate(id, data, {new:true, runValidators:true });
+        const updateTask = await Task.findByIdAndUpdate(id, data, {
+            new:true, 
+            runValidators:true 
+        });
     
         res.status(200).json({
             success: true,
@@ -107,28 +111,28 @@ exports.updateTask = async (req, res) => {
             message: "Task Updated Successfully"
         })
     } catch (error) {
-        console.log("Error in updateTask Api:", error);
+        console.log("Couldn't update task", error);
 
         res.status(500).json({
             success: false,
-            message: "Server error in updating task."
+            message: "Failed to update task."
         });
     }
 }
 
 exports.deleteTask = async (req, res) => {
-    try {
-        const {id} = req.params;
+    const {id} = req.params;
 
-        const task = await Task.findById(id)
-    
-        if (!task){
-            return res.status(404).json({
-                success: false,
-                message: `No Task Found on id ${id}`
-            })
-        }
-    
+    const task = await Task.findById(id)
+
+    if (!task){
+        return res.status(404).json({
+            success: false,
+            message: `No Task Found`
+        })
+    }
+
+    try {
         await Task.findByIdAndDelete(id);
     
         res.status(200).json({
@@ -136,28 +140,28 @@ exports.deleteTask = async (req, res) => {
             message: "Task Deleted Successfully"
         })
     } catch (error) {
-        console.log("Error in deleteTask Api:", error);
+        console.log("Couldn't deleteTask", error);
 
         res.status(500).json({
             success: false,
-            message: "Server error in deleting task."
+            message: "Failed to delete task."
         });
     }
 }
 
 exports.toggleTaskComplete = async (req, res) => {
+    const {id} = req.params;
+    
+    const task = await Task.findById(id);
+    
+    if (!task){
+        return res.status(404).json({
+            success: false,
+            message: `No Task Found`
+        })
+    }
+    
     try {
-        const {id} = req.params;
-    
-        const task = await Task.findById(id);
-        
-        if (!task){
-            return res.status(404).json({
-                success: false,
-                message: `No Task Found on id ${id}`
-            })
-        }
-    
         const updatedTask = await Task.findByIdAndUpdate(
             id, 
             { completed: !task.completed }, 
@@ -167,29 +171,29 @@ exports.toggleTaskComplete = async (req, res) => {
         res.status(200).json({
             success: true,
             data: updatedTask,
-            message: `Task marked as ${updatedTask.completed ? 'completed' : 'incomplete'}`
+            message: "Task Completed Successfully"
         })
     } catch (error) {
-        console.log("Error in toggleTaskComplete Api:", error);
+        console.log("Unable to Complete Task", error);
 
         res.status(500).json({
             success: false,
-            message: "Server error in completing task."
+            message: "Server error"
         });
     }
 }
 
 exports.searchTasks = async (req, res) => {
+    const { term } = req.query;
+    
+    if (!term) {
+        return res.status(400).json({
+            success: false,
+            message: "Search term is required"
+        });
+    }
+
     try {
-        const { term } = req.query;
-    
-        if (!term) {
-            return res.status(400).json({
-                success: false,
-                message: "Search term is required"
-            });
-        }
-    
         const tasks = await Task.find({
           title: { $regex: term, $options: 'i' }
         });
@@ -199,11 +203,11 @@ exports.searchTasks = async (req, res) => {
             data: tasks
         });
     } catch (error) {
-        console.log("Error in searchTasks Api:", error);
+        console.log("Couldn't searchTasks", error);
 
         res.status(500).json({
             success: false,
-            message: "Server error in searching tasks."
+            message: "Server error"
         });
     }
 };
